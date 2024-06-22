@@ -2490,7 +2490,6 @@ msgstr ""
 
 msgid "Support tickets are automatically deleted after 24 hours of inactivity"
 msgstr ""
-"Тікети підтримки автоматично видаляються через 24 години неактивності."
 
 msgid "Attachments persistence"
 msgstr "Стійкість вкладень"

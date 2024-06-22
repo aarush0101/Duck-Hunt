@@ -2214,7 +2214,7 @@ msgstr ""
 "nélkül*) és mi, emberi önkéntesek, le fogjuk zárni."
 
 msgid "Support tickets are automatically deleted after 24 hours of inactivity"
-msgstr "A támogatási jegyek 24 óra inaktivitás után automatikusan törlődnek."
+msgstr ""
 
 msgid "Attachments persistence"
 msgstr "Csatolt fájlok tartóssága"

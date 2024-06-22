@@ -9,7 +9,7 @@ import discord
 
 from utils import ducks
 from utils.cog_class import Cog
-from utils.ducks import deserialize_duck
+from utils.ducks import deserialize_duck, GhostDuck
 from utils.events import Events
 from utils.models import DiscordChannel, DucksLeft, get_enabled_channels
 
@@ -86,24 +86,32 @@ class DucksSpawning(Cog):
                 maybe_spawn_type = await ducks_left_to_spawn.maybe_spawn_type(now)
                 if maybe_spawn_type is not None:
                     if (
-                        self.bot.current_event == Events.CONNECTION
-                        and random.randint(1, 10) == 10
+                            self.bot.current_event == Events.CONNECTION
+                            and random.randint(1, 10) == 10
                     ):
                         continue
 
-                    asyncio.ensure_future(
-                        ducks.spawn_random_weighted_duck(
-                            self.bot,
-                            channel,
-                            ducks_left_to_spawn.db_channel,
-                            sun=maybe_spawn_type,
+                    if self.bot.current_event == Events.HAUNTED_HOUSE:
+                        asyncio.ensure_future(
+                            GhostDuck(
+                                self.bot,
+                                channel,
+                            ).spawn()
                         )
-                    )
+                    else:
+                        asyncio.ensure_future(
+                            ducks.spawn_random_weighted_duck(
+                                self.bot,
+                                channel,
+                                ducks_left_to_spawn.db_channel,
+                                sun=maybe_spawn_type,
+                            )
+                        )
                     ducks_spawned += 1
 
                     if (
-                        self.bot.current_event == Events.MIGRATING
-                        and random.randint(1, 10) == 10
+                            self.bot.current_event == Events.MIGRATING
+                            and random.randint(1, 10) == 10
                     ):
                         asyncio.ensure_future(
                             ducks.spawn_random_weighted_duck(
@@ -330,7 +338,7 @@ class DucksSpawning(Cog):
         embed.add_field(
             name="Statistics",
             value=f"{len(self.bot.guilds)} servers, "
-            f"{len(self.bot.enabled_channels)} channels",
+                  f"{len(self.bot.enabled_channels)} channels",
         )
         embed.add_field(name="Help and support", value="https://duckhunt.me/support")
         embed.set_footer(
@@ -346,6 +354,8 @@ class DucksSpawning(Cog):
             event_name = event_cache["current_event"]
             event = Events[event_name]
             self.bot.current_event = event
+            self.bot.stay_tuned_was_n_events_ago = int(event_cache.get("stay_tuned_was_n_events_ago", 99))
+            self.bot.calm_times_ahead_was_n_events_ago = int(event_cache.get("calm_times_ahead_was_n_events_ago", 99))
         except FileNotFoundError:
             self.bot.logger.warning(
                 "No event_cache.json found. Normal on first run. Rolling an event instead."
@@ -383,7 +393,28 @@ class DucksSpawning(Cog):
         ).compute_ducks_count()
 
     async def change_event(self, force_choice=None, force=False):
-        if random.randint(1, 12) != 1 and not force and not force_choice:
+        can_not_select_event = not force and not force_choice
+
+        random_says_no = random.randint(1, 8) != 1
+
+        if self.bot.current_event == Events.CALM_TIMES_AHEAD:
+            self.bot.stay_tuned_was_n_events_ago = 99
+            self.bot.calm_times_ahead_was_n_events_ago = 0
+
+        if self.bot.current_event == Events.STAY_TUNED:
+            self.bot.stay_tuned_was_n_events_ago = 0
+            self.bot.calm_times_ahead_was_n_events_ago = 99
+
+        self.bot.stay_tuned_was_n_events_ago += 1
+        self.bot.calm_times_ahead_was_n_events_ago += 1
+
+        if self.bot.stay_tuned_was_n_events_ago <= 2:
+            can_not_select_event = False
+
+        if self.bot.calm_times_ahead_was_n_events_ago <= 2:
+            random_says_no = True
+
+        if random_says_no and can_not_select_event:
             self.bot.logger.info("No new event this time!")
             self.bot.current_event = Events.CALM
         else:
@@ -414,7 +445,11 @@ class DucksSpawning(Cog):
         await self.bot.log_to_channel(embed=embed)
 
         with open("cache/event_cache.json", "w") as f:
-            json.dump({"current_event": self.bot.current_event.name}, f)
+            json.dump({
+                "current_event": self.bot.current_event.name,
+                "stay_tuned_was_n_events_ago": self.bot.stay_tuned_was_n_events_ago,
+                "calm_times_ahead_was_n_events_ago": self.bot.calm_times_ahead_was_n_events_ago
+            }, f)
 
 
 setup = DucksSpawning.setup

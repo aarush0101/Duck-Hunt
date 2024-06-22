@@ -39,3 +39,28 @@ class Events(Enum):
     UN_TREATY = _("A UN treaty bans damaging ammo"), _(
         "AP and Explosive ammo are disabled. Super ducks are worth more exp, since they are getting rare."
     )
+
+    EQUALIZER = _("Equalizer"), _(
+        "Ducks are angered that long time hunters get prestige bonuses and are encouraged to kill even more of their families. "
+        "They will steal some prestige bonuses when they can in order to ensure a fairer game for all."
+    )
+
+    HAUNTED_HOUSE = _("Haunted house"), _(
+        "As it turns dark, the ducks also change with the times.  Be prepared to check if there’s a duck lurking in the corner!"
+    )
+
+    REVOLUTION = _("Duck revolution"), _("Beware! Ducks have obtained their own rifles, and will retaliate against hunters that shoot at them.")
+
+    DUST_BOWL = _("Dust bowl"), _("A sandstorm has rolled in, causing the power of clovers to be weakened. "
+                                  "It may also be difficult to buy new clovers due to the drought.")
+
+    BONUS = _("Holiday bonus"), _("Claim your free gift! The first kill you do this hour will award you a lot of experience.")
+
+    BLOSSOMING_FLOWERS = _("Blossoming flowers"), _("Flowers are blooming this season, so all four leaf clover values are increased for the hour. Enjoy the prosperity!")
+
+    GARBAGE_COLLECTION = _("Garbage collection"), _("It's hunting season, and hunters left some items behind. "
+                                                    "One person's trash can end up being your treasure, so enjoy the extra loot you find!")
+
+    STAY_TUNED = _("Stay tuned"), _("Check back during the next two hours to see what the next events will be!")
+
+    CALM_TIMES_AHEAD = _("Calm times ahead"), _("Looks like clear skies ahead. Enjoy killing ducks in the meantime!")

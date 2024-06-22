@@ -108,7 +108,7 @@ class DiscordGuild(Model):
 
     vip = fields.BooleanField(default=False)
 
-    language = fields.CharField(6, default="en")
+    language = fields.CharField(8, default="en")
 
     class Meta:
         table = "guilds"
@@ -727,6 +727,9 @@ class Player(Model):
         "models.DiscordMember", related_name="players"
     )
 
+    ducks_killed_today = DefaultDictJSONField(default_factory=int)
+    ducks_killed_today_last_reset = fields.DatetimeField(auto_now_add=True)
+
     prestige = fields.SmallIntField(default=0)
     prestige_last_daily = fields.DatetimeField(auto_now_add=True)
     prestige_dailies = fields.IntField(default=0)
@@ -899,6 +902,7 @@ class Player(Model):
     async def get_bonus_experience(self, given_experience):
         if self.is_powerup_active("clover"):
             clover_exp = self.active_powerups["clover_exp"]
+
             if self.get_current_coat_color() == Coats.DARK_GREEN:
                 clover_exp += 1
             return clover_exp

@@ -195,21 +195,38 @@ class DucksHuntingCommands(Cog):
                 else:
                     db_hunter.shooting_stats["failed_autoreloads"] += 1
                     await db_hunter.save()
-                    await CommandView(
-                        self.bot,
-                        command_to_be_ran="shop magazine",
-                        label="Buy magazine (13xp)",
-                        style=ButtonStyle.blurple,
-                    ).send(
-                        ctx,
-                        content=_(
-                            "🦉 Backpack empty! Buy magazines | **Bullets**: 0/{max_bullets} | "
-                            "Magazines: 0/{max_magazines} [**Autoreload failed**]",
-                            max_bullets=level_info["bullets"],
-                            max_magazines=level_info["magazines"],
-                        ),
-                        reference=ctx.message,
-                    )
+                    if level_info["bullets"] > 2:
+                        await CommandView(
+                            self.bot,
+                            command_to_be_ran="shop magazine",
+                            label="Buy magazine (13xp)",
+                            style=ButtonStyle.blurple,
+                        ).send(
+                            ctx,
+                            content=_(
+                                "🦉 Backpack empty! Buy magazines | **Bullets**: 0/{max_bullets} | "
+                                "Magazines: 0/{max_magazines} [**Autoreload failed**]",
+                                max_bullets=level_info["bullets"],
+                                max_magazines=level_info["magazines"],
+                            ),
+                            reference=ctx.message,
+                        )
+                    else:
+                        await CommandView(
+                            self.bot,
+                            command_to_be_ran="shop bullet",
+                            label="Buy a bullet (7xp)",
+                            style=ButtonStyle.blurple,
+                        ).send(
+                            ctx,
+                            content=_(
+                                "🦉 Backpack empty! Buy bullets | **Bullets**: 0/{max_bullets} | "
+                                "Magazines: 0/{max_magazines} [**Autoreload failed**]",
+                                max_bullets=level_info["bullets"],
+                                max_magazines=level_info["magazines"],
+                            ),
+                            reference=ctx.message,
+                        )
                     return False
             else:
                 db_hunter.shooting_stats["shots_with_empty_magazine"] += 1
@@ -251,9 +268,13 @@ class DucksHuntingCommands(Cog):
                 msg = _("💥 Your weapon jammed. Reload it and ponder how unlucky you are.")
             await CommandView(
                 self.bot,
-                command_to_be_ran="reload",
-                label="Reload",
-                style=ButtonStyle.blurple,
+                commands=[{
+                    "command": "reload",
+                    "button_kwargs": {
+                        "label": "Reload",
+                        "style": ButtonStyle.blurple,
+                    },
+                }],
             ).send(
                 ctx,
                 content=msg,
@@ -393,9 +414,9 @@ class DucksHuntingCommands(Cog):
                     player_name = db_target.member.user.name
 
                 if (
-                    not murder
-                    and target_coat_color == Coats.ORANGE
-                    and random.randint(1, 100) <= 75
+                        not murder
+                        and target_coat_color == Coats.ORANGE
+                        and random.randint(1, 100) <= 75
                 ):
                     db_hunter.shooting_stats["near_misses"] += 1
                     db_target.shooting_stats["near_missed"] += 1
@@ -413,7 +434,7 @@ class DucksHuntingCommands(Cog):
                     return
 
                 elif (
-                    hunter_coat_color == Coats.PINK and target_coat_color == Coats.PINK
+                        hunter_coat_color == Coats.PINK and target_coat_color == Coats.PINK
                 ):
                     if murder:
                         db_hunter.shooting_stats["murders"] -= 1  # Cancel the murder
@@ -446,7 +467,7 @@ class DucksHuntingCommands(Cog):
                     return
 
                 has_valid_kill_licence = (
-                    db_hunter.is_powerup_active("kill_licence") and not murder
+                        db_hunter.is_powerup_active("kill_licence") and not murder
                 )
 
                 db_hunter.shooting_stats["killed"] += 1
@@ -575,6 +596,28 @@ class DucksHuntingCommands(Cog):
             return False
 
         if duck:
+            if self.bot.current_event == Events.REVOLUTION:
+                if random.randint(0, 99) < 10:
+                    db_hunter.shooting_stats["shot_by_duck"] += 1
+                    db_hunter.shooting_stats["got_killed"] += 1
+                    db_hunter.active_powerups["dead"] += 1
+
+                    await db_hunter.edit_experience_with_levelups(ctx, -2)
+                    await db_hunter.save()
+
+                    await ctx.reply(
+                        _(
+                            "🔫 You took your weapon out, aiming it perfectly towards the duck, and almost pulled the trigger "
+                            "when you noticed the fluffy feathers were hiding a rifle of their own. "
+                            "[**REVOLUTION**: You died][**MISSED**: -2 exp]",
+                        ),
+                        force_public=True,
+                    )
+
+                    await duck.release()
+
+                    return False
+
             db_hunter.shooting_stats["shots_with_duck"] += 1
             duck.db_target_lock_by = db_hunter  # Since we have unsaved data
             result = await duck.shoot(args)
@@ -683,9 +726,23 @@ class DucksHuntingCommands(Cog):
             await db_hunter.save()
             await CommandView(
                 self.bot,
-                command_to_be_ran="shop magazine",
-                label="Buy magazine (13xp)",
-                style=ButtonStyle.blurple,
+                commands=[
+                    {
+                        "command": "shop magazine",
+                        "button_kwargs": {
+                            "label": "Buy magazine (13xp)",
+                            "style": ButtonStyle.blurple,
+                        },
+                    },
+                    {
+                        "command": "inventory use",
+                        "command_args": ["mags"],
+                        "button_kwargs": {
+                            "label": "Use a magazine (from your inventory)",
+                            "style": ButtonStyle.blurple,
+                        },
+                    }
+                ],
             ).send(
                 ctx,
                 content=_(
@@ -703,7 +760,7 @@ class DucksHuntingCommands(Cog):
     @commands.command()
     @checks.channel_enabled()
     async def hug(
-        self, ctx: MyContext, target: Optional[Union[discord.Member, discord.Role, str]], *args
+            self, ctx: MyContext, target: Optional[Union[discord.Member, discord.Role, str]], *args
     ):
         """
         Hug the duck that appeared first on the channel.

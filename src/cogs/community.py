@@ -1,9 +1,10 @@
 import asyncio
+import random
 import re
+from pathlib import Path
 
 import discord
 from discord.ext import commands
-from pathlib import Path
 from tortoise import timezone
 
 from utils import checks, models
@@ -177,6 +178,89 @@ class Community(Cog):
             if maybe_sound:
                 ctx.logger.info(f"Playing sound {maybe_sound} ({message.content})")
                 await ctx.reply(file=discord.File(saysounds_files[maybe_sound]))
+
+        if message.channel.id == 1020670134072901713:
+            # Counter
+            await self.counter(message)
+
+        if "cookie" in message.content.lower():
+            await message.add_reaction("🍪")
+
+        if not message.author.bot and not message.content.startswith("!") and not message.content.lower().startswith("dh"):
+            roundome = random.randint(1, 3600)
+
+            if roundome == 1:
+                # TRUE as a reaction
+                await message.add_reaction("🇹")
+                await message.add_reaction("🇷")
+                await message.add_reaction("🇺")
+                await message.add_reaction("🇪")
+            elif roundome == 2:
+                # FALSE as a reaction
+                await message.add_reaction("🇫")
+                await message.add_reaction("🇦")
+                await message.add_reaction("🇱")
+                await message.add_reaction("🇸")
+                await message.add_reaction("🇪")
+            elif roundome == 3:
+                await message.add_reaction("😂")
+                await message.add_reaction("🤣")
+            elif roundome == 4:
+                await message.add_reaction("🦆")
+            elif roundome == 5:
+                await message.add_reaction("❤️")
+            elif roundome == 6:
+                await message.add_reaction("💖")
+            elif roundome == 7:
+                # TROUT as a reaction
+                await message.add_reaction("🇹")
+                await message.add_reaction("🇷")
+                await message.add_reaction("🇴")
+                await message.add_reaction("🇺")
+                await message.add_reaction("<:letter_T:501145536821461003>")
+                await message.add_reaction("🐟")
+            elif roundome == 8:
+                # ayy lmao
+                await message.add_reaction("👽")
+            elif roundome == 9:
+                await message.add_reaction("💯")
+            elif roundome == 10:
+                await message.add_reaction("👀")
+            elif roundome == 11:
+                await message.add_reaction("💀")
+            elif roundome == 12:
+                await message.add_reaction("🔥")
+            elif roundome == 13:
+                await message.add_reaction("👌")
+            elif roundome == 14:
+                await message.add_reaction("👍")
+            elif roundome == 15:
+                await message.add_reaction("👎")
+            elif roundome == 16:
+                await message.add_reaction("🤔")
+            elif roundome == 17:
+                await message.add_reaction("🤨")
+            elif roundome == 18:
+                await message.add_reaction("😎")
+            elif roundome == 19:
+                await message.add_reaction("🥹")
+            elif roundome == 20:
+                await message.add_reaction("🥳")
+
+    async def counter(self, message):
+        if message.author.bot:
+            return
+        try:
+            current_count = int(message.content)
+        except ValueError:
+            return
+
+        if current_count % 100 == 0:
+            await message.add_reaction("🎉")
+
+        if random.randint(1, 20) == 5:
+            next_count = current_count + 1
+            await message.channel.send(str(next_count))
 
     async def parse_embed_cooldowns(self, embed: discord.Embed):
         now = timezone.now()

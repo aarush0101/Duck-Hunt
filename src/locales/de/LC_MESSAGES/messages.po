@@ -2562,7 +2562,6 @@ msgstr ""
 
 msgid "Support tickets are automatically deleted after 24 hours of inactivity"
 msgstr ""
-"Supportanfragen werden nach 24 Stunden Inaktivität automatisch gelöscht."
 
 msgid "Attachments persistence"
 msgstr "Persistenz der Anhänge"
